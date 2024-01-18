@@ -7,6 +7,7 @@ import BottomTabNavigator from "./components/BottomTabNavigator";
 
 import { createSwitchNavigator, createAppContainer } from "react-navigation";
 
+// Componente principal da aplicação
 export default class App extends Component {
   constructor() {
     super();
@@ -15,6 +16,7 @@ export default class App extends Component {
     };
   }
 
+  // Método para carregar as fontes necessárias
   async loadFonts() {
     await Font.loadAsync({
       Rajdhani_600SemiBold: Rajdhani_600SemiBold
@@ -22,10 +24,12 @@ export default class App extends Component {
     this.setState({ fontLoaded: true });
   }
 
+  // Método chamado após o componente ser montado
   componentDidMount() {
     this.loadFonts();
   }
 
+  // Renderização do componente
   render() {
     const { fontLoaded } = this.state;
     if (fontLoaded) {
@@ -35,6 +39,7 @@ export default class App extends Component {
   }
 }
 
+// Configuração de navegação da aplicação
 const AppSwitchNavigator = createSwitchNavigator(
   {
     Login: {
@@ -49,4 +54,5 @@ const AppSwitchNavigator = createSwitchNavigator(
   }
 );
 
+// Container da aplicação que usa o navegador de comutação (switch navigator)
 const AppContainer = createAppContainer(AppSwitchNavigator);

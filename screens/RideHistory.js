@@ -11,9 +11,12 @@ import { Avatar, ListItem, Icon } from "react-native-elements";
 import firebase from "firebase";
 import db from "../config";
 
+// Componente RideHistoryScreen
 export default class RideHistoryScreen extends Component {
   constructor(props) {
     super(props);
+  
+    // Estado inicial do componente
     this.state = {
       allTransactions: [],
       lastVisibleTransaction: null,
@@ -21,11 +24,14 @@ export default class RideHistoryScreen extends Component {
       email: firebase.auth().currentUser.email
     };
   }
+
+  // Método chamado após o componente ser montado
   componentDidMount = async () => {
     const { email } = this.state;
     this.getTransactions(email);
   };
 
+  // Método para obter as transações do banco de dados
   getTransactions = email => {
     db.collection("transactions")
       .where("email_id", "==", email)
@@ -41,6 +47,7 @@ export default class RideHistoryScreen extends Component {
       });
   };
 
+  // Método para lidar com a pesquisa de transações
   handleSearch = async (bikeId, email) => {
     bikeId = bikeId.toUpperCase().trim();
     this.setState({
@@ -64,6 +71,7 @@ export default class RideHistoryScreen extends Component {
       });
   };
 
+  // Método para carregar mais transações
   fetchMoreTransactions = async (bikeId, email) => {
     bikeId = bikeId.toUpperCase().trim();
 
@@ -83,6 +91,7 @@ export default class RideHistoryScreen extends Component {
     });
   };
 
+  // Método para renderizar cada item da lista
   renderItem = ({ item, i }) => {
     var date = item.date
       .toDate()
@@ -93,6 +102,7 @@ export default class RideHistoryScreen extends Component {
     
     var transactionType =
       item.transaction_type === "rented" ? "alugada" : "devolvida";
+      
     return (
       <View style={{ borderWidth: 1 }}>
         <ListItem key={i} bottomDivider>
@@ -140,6 +150,7 @@ export default class RideHistoryScreen extends Component {
     );
   };
 
+  // Renderização do componente
   render() {
     const { searchText, allTransactions, email } = this.state;
     return (
@@ -173,6 +184,7 @@ export default class RideHistoryScreen extends Component {
     );
   }
 }
+
 
 const styles = StyleSheet.create({
   container: {

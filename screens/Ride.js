@@ -16,12 +16,14 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import firebase from "firebase";
 import db from "../config";
 
+// Importação de imagens e bibliotecas necessárias
 const bgImage = require("../assets/background2.png");
 const appIcon = require("../assets/appIcon.png");
 
 export default class RideScreen extends Component {
   constructor(props) {
     super(props);
+    // Estado inicial do componente
     this.state = {
       bikeId: "",
       userId: "",
@@ -34,24 +36,24 @@ export default class RideScreen extends Component {
     };
   }
 
+  // Método chamado após a montagem do componente
   async componentDidMount() {
     const { email } = this.state;
     await this.getUserDetails(email);
   }
 
+  // Método para obter permissões da câmera
   getCameraPermissions = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
 
     this.setState({
-      /*status === "granted" é verdadeiro se o usuário concedeu permissão
-          status === "granted" é falso se o usuário não concedeu permissão
-        */
       hasCameraPermissions: status === "granted",
       domState: "scanner",
       scanned: false
     });
   };
 
+  // Callback chamada quando um código de barras é escaneado
   handleBarCodeScanned = async ({ type, data }) => {
     this.setState({
       bikeId: data,
@@ -60,6 +62,7 @@ export default class RideScreen extends Component {
     });
   };
 
+  // Lógica principal para processar a transação
   handleTransaction = async () => {
     var { bikeId, userId } = this.state;
     await this.getBikeDetails(bikeId);
@@ -86,12 +89,6 @@ export default class RideScreen extends Component {
         this.setState({
           bikeAssigned: true
         });
-
-        // For Android users only
-        // ToastAndroid.show(
-        //   "Você alugou a bicicleta pela próxima 1 hora. Aproveite seu passeio!!",
-        //   ToastAndroid.SHORT
-        // );
       }
     } else {
       var isEligible = await this.checkUserEligibilityForEndRide(
@@ -106,16 +103,11 @@ export default class RideScreen extends Component {
         this.setState({
           bikeAssigned: false
         });
-
-        // For Android users only
-        // ToastAndroid.show(
-        //   "Esperamos que tenha gostado do seu passeio",
-        //   ToastAndroid.SHORT
-        // );
       }
     }
   };
 
+  // Método para obter detalhes da bicicleta do banco de dados
   getBikeDetails = bikeId => {
     bikeId = bikeId.trim();
     db.collection("bicycles")
@@ -130,6 +122,7 @@ export default class RideScreen extends Component {
       });
   };
 
+  // Método para obter detalhes do usuário do banco de dados
   getUserDetails = email => {
     db.collection("users")
       .where("email_id", "==", email)
@@ -145,6 +138,7 @@ export default class RideScreen extends Component {
       });
   };
 
+  // Método para verificar a disponibilidade da bicicleta
   checkBikeAvailability = async bikeId => {
     const bikeRef = await db
       .collection("bicycles")
@@ -157,8 +151,6 @@ export default class RideScreen extends Component {
     } else {
       bikeRef.docs.map(doc => {
         if (!doc.data().under_maintenance) {
-          // se a bicicleta estiver disponível, o tipo de transação será "rented",
-          // caso contrário, será "return"
           transactionType = doc.data().is_bike_available ? "Alugado" : "Retornar";
         } else {
           transactionType = "under_maintenance";
@@ -170,7 +162,8 @@ export default class RideScreen extends Component {
     return transactionType;
   };
 
-   checkUserEligibilityForStartRide = async (userId, email) => {
+  // Método para verificar a elegibilidade do usuário para iniciar um passeio
+  checkUserEligibilityForStartRide = async (userId, email) => {
     const userRef = await db
       .collection("users")
       .where("id", "==", userId)
@@ -201,6 +194,7 @@ export default class RideScreen extends Component {
     return isUserEligible;
   };
 
+  // Método para verificar a elegibilidade do usuário para encerrar um passeio
   checkUserEligibilityForEndRide = async (bikeId, userId, email) => {
     const transactionRef = await db
       .collection("transactions")
@@ -224,8 +218,8 @@ export default class RideScreen extends Component {
     return isUserEligible;
   };
 
+  // Método para atribuir uma bicicleta ao usuário
   assignBike = async (bikeId, userId, bikeType, userName) => {
-    // adicionar uma transação
     db.collection("transactions").add({
       user_id: userId,
       user_name: userName,
@@ -235,27 +229,24 @@ export default class RideScreen extends Component {
       transaction_type: "rented",
       email_id: email
     });
-    // alterar status da bicicleta
     db.collection("bicycles")
       .doc(bikeId)
       .update({
         is_bike_available: false
       });
-    // mudar o valor referente a bicicleta alugada pelo usuário
     db.collection("users")
       .doc(userId)
       .update({
         bike_assigned: true
       });
 
-    // atualizando estado local
     this.setState({
       bikeId: ""
     });
   };
 
+  // Método para retornar uma bicicleta ao sistema
   returnBike = async (bikeId, userId, bikeType, userName) => {
-    // adicionar uma transação
     db.collection("transactions").add({
       user_id: userId,
       user_name: userName,
@@ -265,28 +256,27 @@ export default class RideScreen extends Component {
       transaction_type: "return",
       email_id: email
     });
-    // alterar status da bicicleta
     db.collection("bicycles")
       .doc(bikeId)
       .update({
         is_bike_available: true
       });
-    // mudar o valor referente a bicicleta alugada pelo usuário
     db.collection("users")
       .doc(userId)
       .update({
         bike_assigned: false
       });
 
-    // atualizando estado local
     this.setState({
       bikeId: ""
     });
   };
 
+  // Renderização do componente
   render() {
     const { bikeId, userId, domState, scanned, bikeAssigned } = this.state;
     if (domState !== "normal") {
+      // Se o estado não for "normal", exibe o scanner de código de barras
       return (
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : this.handleBarCodeScanned}
@@ -294,6 +284,7 @@ export default class RideScreen extends Component {
         />
       );
     }
+    // Renderiza a interface padrão
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <View style={styles.upperContainer}>
@@ -342,6 +333,7 @@ export default class RideScreen extends Component {
   }
 }
 
+// Estilos do componente
 const styles = StyleSheet.create({
   container: {
     flex: 1,

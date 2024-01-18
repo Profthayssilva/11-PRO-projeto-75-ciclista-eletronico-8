@@ -13,30 +13,36 @@ import {
 import firebase from "firebase";
 import db from "../config";
 
+// Importação de imagens e bibliotecas necessárias
 const bgImage = require("../assets/background1.png");
 const appIcon = require("../assets/appIcon.png");
 
 export default class LoginScreen extends Component {
   constructor(props) {
     super(props);
+    // Estado inicial do componente
     this.state = {
       email: "",
       password: ""
     };
   }
 
+  // Método para lidar com o processo de login
   handleLogin = (email, password) => {
     firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
+        // Navega para a tela BottomTab após o login bem-sucedido
         this.props.navigation.navigate("BottomTab");
       })
       .catch(error => {
+        // Exibe um alerta em caso de erro durante o login
         Alert.alert(error.message);
       });
   };
 
+  // Renderização do componente
   render() {
     const { email, password } = this.state;
     return (
@@ -73,6 +79,7 @@ export default class LoginScreen extends Component {
   }
 }
 
+// Estilos do componente
 const styles = StyleSheet.create({
   container: {
     flex: 1,
